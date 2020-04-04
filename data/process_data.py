@@ -1,65 +1,69 @@
+# import libraries
 import sys
 import pandas as pd
+import numpy as np
 from sqlalchemy import create_engine
 
+
 def load_data(messages_filepath, categories_filepath):
-    
-    '''
-    Loads the messages and categories csv files and returns a dataframe by merging them.
-    
-    INPUT:
-    messages_filepath -- str, link to file
-    categories_filepath -- str, link to file
-    
-    OUTPUT:
-    df - pandas DataFrame
-    '''
-   
+    """Read in the messages and categories files"""
+    # load messages dataset
     messages = pd.read_csv(messages_filepath)
+#     messages = messages.drop(columns='original')
+    
+    # load categories dataset
     categories = pd.read_csv(categories_filepath)
-    #Join
-    df = messages.join(categories.set_index('id'), on='id')
+    
+    # merge datasets
+    df = pd.merge(messages, categories, how='outer', on='id')
     return df
+
 
 
 def clean_data(df):
-    
-    """
-    Cleans the dataset by formatting columns and dropping duplicates.
-    
-    INPUT:
-    
-    df -- type pandas DataFrame
-    OUTPUT:
-    
-    df -- cleaned pandas DataFrame
-    """
-    #Formatting columns
-    categories = df['categories'].str.split(pat=';', expand=True)
-    row = categories.loc[0]
-    category_colnames = row.apply(lambda x: x[:-2])
+    """Process data so that it is in a suitable format to be used within a ML pipeline"""
+    # create a dataframe of the 36 individual category columns
+    categories = df['categories'].str.split(';', expand=True)
+    row = categories.iloc[0]
+    category_colnames = row.map(lambda x: x.split('-')[0])
+
+    # rename the columns of `categories`
     categories.columns = category_colnames
+
     for column in categories:
-        categories[column] =  categories[column].str[-1:]
-        categories[column] = categories[column].astype(int)
-    df=df.drop(['categories'], axis=1)
-    df = pd.concat([df, categories], axis=1)
+        # set each value to be the last character of the string
+        categories[column] = categories[column].astype(str).str.split('-').map(lambda x: x[1])
+
+        # convert column from string to numeric
+        categories[column] = categories[column]
+
+    # drop the original categories column from `df`
+    df.drop(columns=['categories'], inplace=True)
+
+    # concatenate the original dataframe with the new `categories` dataframe
+    df = pd.concat([df,categories], axis=1)
+    df = df.set_index('id')
     
-    #Remove duplicates
-    df=df.drop_duplicates()
+    # remove duplicates
+    df = df.drop_duplicates()
     
+    # enforce numerical type for category labels
+    col_to_numeric = list(df.columns[~df.columns.isin(['message','genre','original'])])
+    df[col_to_numeric] = df[col_to_numeric].apply(pd.to_numeric, downcast='unsigned')
+    
+    # fixes some boolean values in 'related' that are 2 instead of 1
+    df.loc[df['related'] == 2,'related'] = 1
+
     return df
 
-
 def save_data(df, database_filename):
+    """Create SQL DB and store the processed data in the form of a table"""
+    engine = create_engine('sqlite:///' + database_filename)
+    try:
+        df.to_sql('main_table', engine, index=False, if_exists='replace')  
+    except:
+        print('Not possible to create Table, it may already exist')
     
-    """Saves DataFrame to database path"""
-    eng_name = 'sqlite:///' + database_filename
-    engine = create_engine(eng_name)
-    df.to_sql('response', engine, index=False)
-    
-
-
 def main():
     if len(sys.argv) == 4:
 
