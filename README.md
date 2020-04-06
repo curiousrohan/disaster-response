@@ -22,6 +22,6 @@ A web dashboard is made to solve this probloem.
 
 > python run.py
 
-> Go to http://0.0.0.0:3001 to visualize the Web Ap
+> Go to http://0.0.0.0:3001 to visualize the Web App
 ## About
 The data was provided by Figure Eight as a part of the Udacity Data Scientist Nanodegree programme.
