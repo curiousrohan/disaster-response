@@ -8,7 +8,7 @@ A web dashboard is made to solve this probloem.
   - disaster_categories.csv(Dataset Containing 36 types of categories) and disaster_messages.csv(Messages during a disaster)
   - DisasterResponse.db: Output file from process_data.py. Stores the processed data in a database.
 - Models
-  - train_classifier.py: Loads the DisasterResponse.db and does text cleaning before feeding the output to a machine learning pipiline using Random Forests. GridSearchCV is used to tune the hyperparametets. Model is saved as a pickel file.
+  - train_classifier.py: Loads the DisasterResponse.db and does text cleaning before feeding the output to a machine learning pipeline using Random Forests. GridSearchCV is used to tune the hyperparametets. Model is saved as a pickle file.
   - classifier.pkl: Saved Machine Learning model
 - App
   - run.py: Flask app and the GUI used to predict results and display them. Uses classifier.pkl as model.
@@ -23,5 +23,17 @@ A web dashboard is made to solve this probloem.
 > python run.py
 
 > Go to http://0.0.0.0:3001 to visualize the Web App
+
+## Screenshots
+Homepage:
+![Alt text](https://github.com/curiousrohan/disaster-response/blob/master/Screenshots/charts.png?raw=true "Homepage")
+
+Example 1:
+![Alt text](https://github.com/curiousrohan/disaster-response/blob/master/Screenshots/true.png?raw=true "True")
+
+Example 2:
+![Alt text](https://github.com/curiousrohan/disaster-response/blob/master/Screenshots/false.png?raw=true "False")
+
+
 ## About
 The data was provided by Figure Eight as a part of the Udacity Data Scientist Nanodegree programme.
